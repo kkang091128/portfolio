@@ -2,12 +2,14 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from '
 import type { Session, User } from '@supabase/supabase-js';
 import { supabase } from './supabase';
 
+const ADMIN_EMAIL = 'admin@portfolio.local';
+
 type AuthContextValue = {
   session: Session | null;
   user: User | null;
   loading: boolean;
-  signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string) => Promise<void>;
+  isAdmin: boolean;
+  signIn: (username: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
 };
 
@@ -32,13 +34,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = async (username: string, password: string) => {
+    const email = username.trim().toLowerCase() === 'admin' ? ADMIN_EMAIL : username.trim();
     const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) throw error;
-  };
-
-  const signUp = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signUp({ email, password });
     if (error) throw error;
   };
 
@@ -47,9 +45,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (error) throw error;
   };
 
+  const user = session?.user ?? null;
+  const isAdmin = user?.email === ADMIN_EMAIL;
+
   return (
     <AuthContext.Provider
-      value={{ session, user: session?.user ?? null, loading, signIn, signUp, signOut }}
+      value={{ session, user, loading, isAdmin, signIn, signOut }}
     >
       {children}
     </AuthContext.Provider>

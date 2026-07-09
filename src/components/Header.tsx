@@ -10,7 +10,7 @@ type Props = {
 
 export function Header({ route }: Props) {
   const isActive = (name: string) => route.name === name;
-  const { user, signOut } = useAuth();
+  const { isAdmin, signOut } = useAuth();
   const [authOpen, setAuthOpen] = useState(false);
 
   const handleSignOut = async () => {
@@ -71,11 +71,11 @@ export function Header({ route }: Props) {
             </nav>
 
             <div className="flex items-center gap-1 ml-1 sm:ml-2 pl-1 sm:pl-2 border-l border-stone-200">
-              {user ? (
+              {isAdmin ? (
                 <div className="flex items-center gap-1.5">
-                  <span className="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs text-stone-600">
+                  <span className="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs text-[#c8553d] font-medium">
                     <UserIcon className="w-3.5 h-3.5" />
-                    <span className="max-w-[140px] truncate">{user.email}</span>
+                    <span>관리자</span>
                   </span>
                   <button
                     onClick={handleSignOut}

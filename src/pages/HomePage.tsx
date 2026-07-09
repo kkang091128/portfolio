@@ -7,8 +7,8 @@ import type { Student } from '../lib/supabase';
 import { Modal } from '../components/Modal';
 
 export function HomePage() {
-  const { user } = useAuth();
-  const canEdit = !!user;
+  const { isAdmin } = useAuth();
+  const canEdit = isAdmin;
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

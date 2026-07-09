@@ -18,8 +18,8 @@ import { Modal } from '../components/Modal';
 type Props = { studentId: string };
 
 export function StudentPage({ studentId }: Props) {
-  const { user } = useAuth();
-  const canEdit = !!user;
+  const { isAdmin } = useAuth();
+  const canEdit = isAdmin;
   const [data, setData] = useState<StudentWithChapters | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
