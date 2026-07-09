@@ -10,6 +10,7 @@ import {
   deleteArtwork,
 } from '../lib/api';
 import { navigate } from '../lib/router';
+import { useAuth } from '../lib/auth';
 import type { StudentWithChapters, Artwork } from '../lib/supabase';
 import { SlideGallery } from '../components/SlideGallery';
 import { Modal } from '../components/Modal';
@@ -17,6 +18,8 @@ import { Modal } from '../components/Modal';
 type Props = { studentId: string };
 
 export function StudentPage({ studentId }: Props) {
+  const { user } = useAuth();
+  const canEdit = !!user;
   const [data, setData] = useState<StudentWithChapters | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -246,6 +249,7 @@ export function StudentPage({ studentId }: Props) {
                 {ch.title}
               </button>
             ))}
+            {canEdit && (
             <button
               onClick={openAddChapter}
               className="flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center text-stone-500 hover:bg-stone-200/50 transition-smooth"
@@ -253,6 +257,7 @@ export function StudentPage({ studentId }: Props) {
             >
               <Plus className="w-5 h-5" />
             </button>
+            )}
           </div>
         </div>
       </section>
@@ -271,12 +276,16 @@ export function StudentPage({ studentId }: Props) {
               <BookOpen className="w-8 h-8 text-stone-400" />
             </div>
             <p className="text-stone-500 mb-4">아직 챕터가 없습니다</p>
-            <button
-              onClick={openAddChapter}
-              className="px-5 py-2.5 rounded-lg bg-[#1a1a1a] text-[#faf8f5] text-sm font-medium hover:bg-[#c8553d] transition-smooth"
-            >
-              첫 챕터 만들기
-            </button>
+            {canEdit ? (
+              <button
+                onClick={openAddChapter}
+                className="px-5 py-2.5 rounded-lg bg-[#1a1a1a] text-[#faf8f5] text-sm font-medium hover:bg-[#c8553d] transition-smooth"
+              >
+                첫 챕터 만들기
+              </button>
+            ) : (
+              <p className="text-xs text-stone-400">챕터를 추가하려면 로그인이 필요합니다.</p>
+            )}
           </div>
         ) : chapter ? (
           <div>
@@ -288,6 +297,7 @@ export function StudentPage({ studentId }: Props) {
                   <p className="mt-1.5 text-stone-600 leading-relaxed max-w-2xl">{chapter.description}</p>
                 )}
               </div>
+              {canEdit && (
               <div className="flex gap-1.5 flex-shrink-0">
                 <button
                   onClick={() => openEditChapter(chapter.id, chapter.title, chapter.description)}
@@ -304,6 +314,7 @@ export function StudentPage({ studentId }: Props) {
                   <Trash2 className="w-4 h-4" />
                 </button>
               </div>
+              )}
             </div>
 
             {/* Gallery */}
@@ -316,6 +327,7 @@ export function StudentPage({ studentId }: Props) {
                   <h3 className="text-sm font-semibold text-stone-700 uppercase tracking-wide">
                     작품 목록
                   </h3>
+                  {canEdit && (
                   <button
                     onClick={() => openAddArtwork(chapter.id)}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-stone-600 hover:bg-stone-100 transition-smooth"
@@ -323,6 +335,7 @@ export function StudentPage({ studentId }: Props) {
                     <Plus className="w-4 h-4" />
                     작품 추가
                   </button>
+                  )}
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                   {chapter.artworks.map((aw) => (
@@ -344,6 +357,7 @@ export function StudentPage({ studentId }: Props) {
                           <p className="mt-0.5 text-xs text-stone-500 line-clamp-2">{aw.description}</p>
                         )}
                       </div>
+                      {canEdit && (
                       <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-smooth">
                         <button
                           onClick={() => openEditArtwork(aw)}
@@ -358,6 +372,7 @@ export function StudentPage({ studentId }: Props) {
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
                       </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -368,13 +383,17 @@ export function StudentPage({ studentId }: Props) {
               <div className="mt-8 flex flex-col items-center justify-center py-12 text-center border-2 border-dashed border-stone-200 rounded-2xl">
                 <ImageIcon className="w-10 h-10 text-stone-300 mb-3" />
                 <p className="text-stone-500 mb-4">이 챕터에 작품을 추가해보세요</p>
-                <button
-                  onClick={() => openAddArtwork(chapter.id)}
-                  className="flex items-center gap-1.5 px-4 py-2.5 rounded-lg bg-[#1a1a1a] text-[#faf8f5] text-sm font-medium hover:bg-[#c8553d] transition-smooth"
-                >
-                  <Plus className="w-4 h-4" />
-                  작품 추가
-                </button>
+                {canEdit ? (
+                  <button
+                    onClick={() => openAddArtwork(chapter.id)}
+                    className="flex items-center gap-1.5 px-4 py-2.5 rounded-lg bg-[#1a1a1a] text-[#faf8f5] text-sm font-medium hover:bg-[#c8553d] transition-smooth"
+                  >
+                    <Plus className="w-4 h-4" />
+                    작품 추가
+                  </button>
+                ) : (
+                  <p className="text-xs text-stone-400">작품을 추가하려면 로그인이 필요합니다.</p>
+                )}
               </div>
             )}
           </div>

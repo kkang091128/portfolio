@@ -1,4 +1,5 @@
 import { useRouter } from './lib/router';
+import { AuthProvider } from './lib/auth';
 import { Header } from './components/Header';
 import { HomePage } from './pages/HomePage';
 import { StudentPage } from './pages/StudentPage';
@@ -9,6 +10,7 @@ function App() {
   const { route } = useRouter();
 
   return (
+    <AuthProvider>
     <div className="min-h-screen bg-[#faf8f5]">
       <Header route={route} />
       <main>
@@ -28,6 +30,7 @@ function App() {
         </div>
       </footer>
     </div>
+    </AuthProvider>
   );
 }
 
