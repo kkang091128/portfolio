@@ -22,7 +22,7 @@ function App() {
       <footer className="border-t border-stone-200 mt-10">
         <div className="max-w-7xl mx-auto px-6 lg:px-10 py-8 flex flex-col sm:flex-row items-center justify-between gap-3">
           <p className="text-sm text-stone-500">
-            편집·출판 직업훈련반 포트폴리오 전시 아카이브
+            목포 한양 편집·출판 직업훈련반 포트폴리오 전시 아카이브
           </p>
           <p className="text-xs text-stone-400">
             Editing & Publishing Vocational Training · Portfolio Exhibition
