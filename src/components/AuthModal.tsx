@@ -12,12 +12,14 @@ const ADMIN_EMAIL = 'admin@portfolio.local';
 export function AuthModal({ open, onClose }: Props) {
   const { signIn, signUp } = useAuth();
   const [mode, setMode] = useState<'signin' | 'signup'>('signin');
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   const reset = () => {
+    setName('');
     setEmail('');
     setPassword('');
     setError(null);
@@ -37,6 +39,7 @@ export function AuthModal({ open, onClose }: Props) {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim() || !password.trim()) return;
+    if (mode === 'signup' && !name.trim()) return;
     try {
       setBusy(true);
       setError(null);
@@ -44,7 +47,7 @@ export function AuthModal({ open, onClose }: Props) {
       if (mode === 'signin') {
         await signIn(resolved, password);
       } else {
-        await signUp(resolved, password);
+        await signUp(resolved, password, name);
       }
       close();
     } catch (err) {
@@ -69,6 +72,10 @@ export function AuthModal({ open, onClose }: Props) {
     setMode(m);
     setError(null);
   };
+
+  const canSubmit = mode === 'signin'
+    ? !!email.trim() && !!password.trim()
+    : !!name.trim() && !!email.trim() && !!password.trim();
 
   return (
     <Modal open={open} onClose={close} title={mode === 'signin' ? '로그인' : '회원 가입'} maxWidth="max-w-md">
@@ -96,7 +103,7 @@ export function AuthModal({ open, onClose }: Props) {
 
         {mode === 'signup' ? (
           <p className="text-xs text-stone-500 leading-relaxed">
-            회원 가입 후 본인의 포트폴리오(학생 프로필, 챕터, 작품)를 직접 추가하고 삭제할 수 있습니다.
+            회원 가입 시 입력한 이름으로 학생 프로필이 자동 생성됩니다. 로그인 후 본인의 챕터와 작품을 추가하고 삭제할 수 있습니다.
           </p>
         ) : (
           <p className="text-xs text-stone-500 leading-relaxed">
@@ -104,6 +111,21 @@ export function AuthModal({ open, onClose }: Props) {
           </p>
         )}
 
+        {mode === 'signup' && (
+          <div>
+            <label className="block text-sm font-medium text-stone-700 mb-1.5">이름 *</label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="input"
+              placeholder="학생 이름"
+              autoComplete="name"
+              autoFocus
+              required
+            />
+          </div>
+        )}
         <div>
           <label className="block text-sm font-medium text-stone-700 mb-1.5">
             {mode === 'signin' ? '이메일 (또는 admin)' : '이메일'}
@@ -115,7 +137,7 @@ export function AuthModal({ open, onClose }: Props) {
             className="input"
             placeholder={mode === 'signin' ? 'you@example.com 또는 admin' : 'you@example.com'}
             autoComplete="email"
-            autoFocus
+            autoFocus={mode === 'signin'}
             required
           />
         </div>
@@ -148,7 +170,7 @@ export function AuthModal({ open, onClose }: Props) {
           </button>
           <button
             type="submit"
-            disabled={busy || !email.trim() || !password.trim()}
+            disabled={busy || !canSubmit}
             className="px-5 py-2.5 rounded-lg bg-[#1a1a1a] text-[#faf8f5] text-sm font-medium hover:bg-[#c8553d] transition-smooth disabled:opacity-50"
           >
             {busy ? '처리 중...' : mode === 'signin' ? '로그인' : '가입하기'}

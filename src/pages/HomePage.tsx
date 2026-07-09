@@ -8,7 +8,7 @@ import { Modal } from '../components/Modal';
 
 export function HomePage() {
   const { user, isAdmin } = useAuth();
-  const canAdd = !!user;
+  const canAdd = isAdmin;
   const canManage = (s: Student) => isAdmin || (s.user_id !== null && s.user_id === user?.id);
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
@@ -176,7 +176,7 @@ export function HomePage() {
                 첫 학생 추가하기
               </button>
             ) : (
-              <p className="text-xs text-stone-400">학생을 추가하려면 로그인이 필요합니다.</p>
+              <p className="text-xs text-stone-400">회원 가입하면 학생 프로필이 자동으로 생성됩니다.</p>
             )}
           </div>
         ) : (

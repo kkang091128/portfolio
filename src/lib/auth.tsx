@@ -10,7 +10,7 @@ type AuthContextValue = {
   loading: boolean;
   isAdmin: boolean;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string) => Promise<void>;
+  signUp: (email: string, password: string, name: string) => Promise<void>;
   signOut: () => Promise<void>;
 };
 
@@ -40,9 +40,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (error) throw error;
   };
 
-  const signUp = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signUp({ email, password });
+  const signUp = async (email: string, password: string, name: string) => {
+    const { data, error } = await supabase.auth.signUp({ email, password });
     if (error) throw error;
+
+    const userId = data.user?.id;
+    if (userId) {
+      const { error: insertError } = await supabase.from('students').insert({
+        name: name.trim(),
+        user_id: userId,
+      });
+      if (insertError) throw insertError;
+    }
   };
 
   const signOut = async () => {
