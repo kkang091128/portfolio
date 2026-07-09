@@ -9,7 +9,8 @@ type AuthContextValue = {
   user: User | null;
   loading: boolean;
   isAdmin: boolean;
-  signIn: (username: string, password: string) => Promise<void>;
+  signIn: (email: string, password: string) => Promise<void>;
+  signUp: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
 };
 
@@ -34,9 +35,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  const signIn = async (username: string, password: string) => {
-    const email = username.trim().toLowerCase() === 'admin' ? ADMIN_EMAIL : username.trim();
+  const signIn = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+  };
+
+  const signUp = async (email: string, password: string) => {
+    const { error } = await supabase.auth.signUp({ email, password });
     if (error) throw error;
   };
 
@@ -50,7 +55,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ session, user, loading, isAdmin, signIn, signOut }}
+      value={{ session, user, loading, isAdmin, signIn, signUp, signOut }}
     >
       {children}
     </AuthContext.Provider>

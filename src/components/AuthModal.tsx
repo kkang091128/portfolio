@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { ShieldCheck } from 'lucide-react';
 import { useAuth } from '../lib/auth';
 import { Modal } from './Modal';
 
@@ -8,32 +7,56 @@ type Props = {
   onClose: () => void;
 };
 
+const ADMIN_EMAIL = 'admin@portfolio.local';
+
 export function AuthModal({ open, onClose }: Props) {
-  const { signIn } = useAuth();
-  const [username, setUsername] = useState('');
+  const { signIn, signUp } = useAuth();
+  const [mode, setMode] = useState<'signin' | 'signup'>('signin');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  const close = () => {
-    setUsername('');
+  const reset = () => {
+    setEmail('');
     setPassword('');
     setError(null);
+  };
+
+  const close = () => {
+    reset();
     onClose();
+  };
+
+  const resolveEmail = (value: string) => {
+    const trimmed = value.trim();
+    if (trimmed.toLowerCase() === 'admin') return ADMIN_EMAIL;
+    return trimmed;
   };
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!username.trim() || !password.trim()) return;
+    if (!email.trim() || !password.trim()) return;
     try {
       setBusy(true);
       setError(null);
-      await signIn(username.trim(), password);
+      const resolved = resolveEmail(email);
+      if (mode === 'signin') {
+        await signIn(resolved, password);
+      } else {
+        await signUp(resolved, password);
+      }
       close();
     } catch (err) {
       const msg = (err as Error).message;
       if (msg.includes('Invalid login credentials')) {
-        setError('아이디 또는 비밀번호가 올바르지 않습니다.');
+        setError('이메일 또는 비밀번호가 올바르지 않습니다.');
+      } else if (msg.includes('already registered') || msg.includes('already been registered')) {
+        setError('이미 가입된 이메일입니다. 로그인해주세요.');
+      } else if (msg.toLowerCase().includes('weak_password') || msg.toLowerCase().includes('password is known to be weak')) {
+        setError('비밀번호가 너무 약합니다. 더 복잡한 비밀번호를 사용해주세요.');
+      } else if (msg.toLowerCase().includes('password') && msg.toLowerCase().includes('short')) {
+        setError('비밀번호는 최소 6자 이상이어야 합니다.');
       } else {
         setError(msg);
       }
@@ -42,27 +65,56 @@ export function AuthModal({ open, onClose }: Props) {
     }
   };
 
+  const switchMode = (m: 'signin' | 'signup') => {
+    setMode(m);
+    setError(null);
+  };
+
   return (
-    <Modal open={open} onClose={close} title="관리자 로그인" maxWidth="max-w-md">
+    <Modal open={open} onClose={close} title={mode === 'signin' ? '로그인' : '회원 가입'} maxWidth="max-w-md">
       <form onSubmit={submit} className="space-y-4">
-        <div className="flex items-center gap-3 p-3 rounded-xl bg-[#c8553d]/8 border border-[#c8553d]/15">
-          <div className="w-9 h-9 rounded-lg bg-[#c8553d]/15 flex items-center justify-center text-[#c8553d] flex-shrink-0">
-            <ShieldCheck className="w-5 h-5" />
-          </div>
-          <p className="text-xs text-stone-600 leading-relaxed">
-            콘텐츠 추가 및 삭제는 관리자 계정으로 로그인한 사용자만 가능합니다.
-          </p>
+        <div className="flex gap-1 p-1 rounded-xl bg-stone-100">
+          <button
+            type="button"
+            onClick={() => switchMode('signin')}
+            className={`flex-1 py-2 rounded-lg text-sm font-medium transition-smooth ${
+              mode === 'signin' ? 'bg-white text-[#1a1a1a] shadow-sm' : 'text-stone-500 hover:text-[#1a1a1a]'
+            }`}
+          >
+            로그인
+          </button>
+          <button
+            type="button"
+            onClick={() => switchMode('signup')}
+            className={`flex-1 py-2 rounded-lg text-sm font-medium transition-smooth ${
+              mode === 'signup' ? 'bg-white text-[#1a1a1a] shadow-sm' : 'text-stone-500 hover:text-[#1a1a1a]'
+            }`}
+          >
+            회원 가입
+          </button>
         </div>
 
+        {mode === 'signup' ? (
+          <p className="text-xs text-stone-500 leading-relaxed">
+            회원 가입 후 본인의 포트폴리오(학생 프로필, 챕터, 작품)를 직접 추가하고 삭제할 수 있습니다.
+          </p>
+        ) : (
+          <p className="text-xs text-stone-500 leading-relaxed">
+            학생은 이메일로 로그인하고, 관리자는 아이디 <span className="font-medium text-stone-700">admin</span> 으로 로그인합니다.
+          </p>
+        )}
+
         <div>
-          <label className="block text-sm font-medium text-stone-700 mb-1.5">아이디</label>
+          <label className="block text-sm font-medium text-stone-700 mb-1.5">
+            {mode === 'signin' ? '이메일 (또는 admin)' : '이메일'}
+          </label>
           <input
             type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             className="input"
-            placeholder="admin"
-            autoComplete="username"
+            placeholder={mode === 'signin' ? 'you@example.com 또는 admin' : 'you@example.com'}
+            autoComplete="email"
             autoFocus
             required
           />
@@ -74,8 +126,8 @@ export function AuthModal({ open, onClose }: Props) {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="input"
-            placeholder="비밀번호"
-            autoComplete="current-password"
+            placeholder="최소 6자 이상"
+            autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
             required
           />
         </div>
@@ -96,10 +148,10 @@ export function AuthModal({ open, onClose }: Props) {
           </button>
           <button
             type="submit"
-            disabled={busy || !username.trim() || !password.trim()}
+            disabled={busy || !email.trim() || !password.trim()}
             className="px-5 py-2.5 rounded-lg bg-[#1a1a1a] text-[#faf8f5] text-sm font-medium hover:bg-[#c8553d] transition-smooth disabled:opacity-50"
           >
-            {busy ? '로그인 중...' : '로그인'}
+            {busy ? '처리 중...' : mode === 'signin' ? '로그인' : '가입하기'}
           </button>
         </div>
       </form>

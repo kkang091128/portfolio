@@ -13,6 +13,7 @@ export type Student = {
   photo_url: string | null;
   sort_order: number;
   created_at: string;
+  user_id: string | null;
 };
 
 export type Chapter = {

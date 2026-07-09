@@ -18,9 +18,9 @@ import { Modal } from '../components/Modal';
 type Props = { studentId: string };
 
 export function StudentPage({ studentId }: Props) {
-  const { isAdmin } = useAuth();
-  const canEdit = isAdmin;
+  const { user, isAdmin } = useAuth();
   const [data, setData] = useState<StudentWithChapters | null>(null);
+  const canEdit = !!data && (isAdmin || (data.user_id !== null && data.user_id === user?.id));
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeChapter, setActiveChapter] = useState(0);

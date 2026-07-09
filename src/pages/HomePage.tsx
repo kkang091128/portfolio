@@ -7,8 +7,9 @@ import type { Student } from '../lib/supabase';
 import { Modal } from '../components/Modal';
 
 export function HomePage() {
-  const { isAdmin } = useAuth();
-  const canEdit = isAdmin;
+  const { user, isAdmin } = useAuth();
+  const canAdd = !!user;
+  const canManage = (s: Student) => isAdmin || (s.user_id !== null && s.user_id === user?.id);
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -70,15 +71,15 @@ export function HomePage() {
       await load();
     } catch (e) {
       const msg = (e as Error).message;
-      setError(canEdit ? msg : '로그인이 필요합니다. 오른쪽 위에서 로그인해주세요.');
+      setError(user ? msg : '로그인이 필요합니다. 오른쪽 위에서 로그인해주세요.');
     } finally {
       setSaving(false);
     }
   };
 
   const remove = async (s: Student) => {
-    if (!canEdit) {
-      setError('로그인이 필요합니다. 오른쪽 위에서 로그인해주세요.');
+    if (!canManage(s)) {
+      setError('본인의 포트폴리오만 삭제할 수 있습니다.');
       return;
     }
     if (!confirm(`'${s.name}' 학생과 모든 챕터, 작품이 삭제됩니다. 계속하시겠습니까?`)) return;
@@ -117,7 +118,7 @@ export function HomePage() {
               >
                 챕터 비교하기
               </button>
-              {canEdit && (
+              {canAdd && (
                 <button
                   onClick={openAdd}
                   className="px-5 py-3 rounded-xl border border-stone-300 text-[#1a1a1a] font-medium text-sm hover:border-[#1a1a1a] hover:bg-white transition-smooth flex items-center gap-1.5"
@@ -138,7 +139,7 @@ export function HomePage() {
             <h2 className="font-serif-kr text-2xl font-bold text-[#1a1a1a]">참여 학생</h2>
             <p className="mt-1 text-sm text-stone-500">총 {students.length}명의 학생 포트폴리오</p>
           </div>
-          {canEdit && (
+          {canAdd && (
             <button
               onClick={openAdd}
               className="hidden sm:flex items-center gap-1.5 px-4 py-2.5 rounded-lg border border-stone-300 text-sm font-medium text-stone-700 hover:border-[#1a1a1a] hover:bg-white transition-smooth"
@@ -167,7 +168,7 @@ export function HomePage() {
               <BookOpen className="w-8 h-8 text-stone-400" />
             </div>
             <p className="text-stone-500 mb-4">아직 등록된 학생이 없습니다</p>
-            {canEdit ? (
+            {canAdd ? (
               <button
                 onClick={openAdd}
                 className="px-5 py-2.5 rounded-lg bg-[#1a1a1a] text-[#faf8f5] text-sm font-medium hover:bg-[#c8553d] transition-smooth"
@@ -223,7 +224,7 @@ export function HomePage() {
                 </button>
 
                 {/* Action buttons */}
-                {canEdit && (
+                {canManage(s) && (
                 <div className="absolute top-3 right-3 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-smooth">
                   <button
                     onClick={(e) => { e.stopPropagation(); openEdit(s); }}

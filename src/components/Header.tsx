@@ -10,7 +10,7 @@ type Props = {
 
 export function Header({ route }: Props) {
   const isActive = (name: string) => route.name === name;
-  const { isAdmin, signOut } = useAuth();
+  const { user, isAdmin, signOut } = useAuth();
   const [authOpen, setAuthOpen] = useState(false);
 
   const handleSignOut = async () => {
@@ -71,12 +71,19 @@ export function Header({ route }: Props) {
             </nav>
 
             <div className="flex items-center gap-1 ml-1 sm:ml-2 pl-1 sm:pl-2 border-l border-stone-200">
-              {isAdmin ? (
+              {user ? (
                 <div className="flex items-center gap-1.5">
-                  <span className="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs text-[#c8553d] font-medium">
-                    <UserIcon className="w-3.5 h-3.5" />
-                    <span>관리자</span>
-                  </span>
+                  {isAdmin ? (
+                    <span className="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs text-[#c8553d] font-medium">
+                      <UserIcon className="w-3.5 h-3.5" />
+                      <span>관리자</span>
+                    </span>
+                  ) : (
+                    <span className="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs text-stone-600 max-w-[160px]">
+                      <UserIcon className="w-3.5 h-3.5 flex-shrink-0" />
+                      <span className="truncate">{user.email}</span>
+                    </span>
+                  )}
                   <button
                     onClick={handleSignOut}
                     className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-stone-600 hover:text-[#1a1a1a] hover:bg-stone-200/50 transition-smooth"

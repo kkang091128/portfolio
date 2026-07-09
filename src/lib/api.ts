@@ -81,7 +81,7 @@ export async function fetchAllChaptersByTitle(): Promise<Map<string, { student: 
   return result;
 }
 
-export async function createStudent(input: Omit<Student, 'id' | 'created_at' | 'sort_order'> & { sort_order?: number }): Promise<Student> {
+export async function createStudent(input: Omit<Student, 'id' | 'created_at' | 'sort_order' | 'user_id'> & { sort_order?: number }): Promise<Student> {
   const { data, error } = await supabase
     .from('students')
     .insert(input)
@@ -91,7 +91,7 @@ export async function createStudent(input: Omit<Student, 'id' | 'created_at' | '
   return data as Student;
 }
 
-export async function updateStudent(id: string, input: Partial<Omit<Student, 'id' | 'created_at'>>): Promise<Student> {
+export async function updateStudent(id: string, input: Partial<Omit<Student, 'id' | 'created_at' | 'user_id'>>): Promise<Student> {
   const { data, error } = await supabase
     .from('students')
     .update(input)
